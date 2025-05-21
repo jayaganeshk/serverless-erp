@@ -1,0 +1,83 @@
+org: jayaganesh
+app: serverless-erp
+service: serverless-erp
+
+stages:
+  default:
+    params:
+      tableName: "erp-table-${sls:stage}"
+
+plugins:
+  - serverless-plugin-typescript
+
+build:
+  esbuild: false
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - Fn::GetAtt: [ErpTable, Arn]
+  environment:
+    DDB_TABLE_NAME: ${param:tableName}
+
+functions:
+  invoiceApi:
+    name: invoice-handler-${sls:stage}
+    handler: src/handlers/getInvoice.handler
+    events:
+      - http: GET /invoices
+    environment:
+      DDB_TABLE_NAME: ${param:tableName}
+resources:
+  Resources:
+    ErpTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: entityType
+            AttributeType: S
+          - AttributeName: customerId
+            AttributeType: S
+          - AttributeName: paymentStatus
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        # GSI
+        GlobalSecondaryIndexes:
+          - IndexName: entityTypeCustomerIdIndex
+            KeySchema:
+              - AttributeName: entityType
+                KeyType: HASH
+              - AttributeName: customerId
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: entityTypePaymentStatusIndex
+            KeySchema:
+              - AttributeName: entityType
+                KeyType: HASH
+              - AttributeName: paymentStatus
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${param:tableName}
