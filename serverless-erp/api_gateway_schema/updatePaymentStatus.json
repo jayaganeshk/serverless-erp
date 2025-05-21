@@ -1,0 +1,19 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Invoice",
+    "type": "object",
+    "required": [
+        "paymentStatus"
+    ],
+    "properties": {
+        "paymentStatus": {
+            "type": "string",
+            "enum": [
+                "PAID",
+                "UNPAID",
+                "OVERDUE"
+            ],
+            "description": "The current payment status of the invoice"
+        }
+    }
+}

@@ -33,11 +33,43 @@ provider:
     DDB_TABLE_NAME: ${param:tableName}
 
 functions:
-  invoiceApi:
-    name: invoice-handler-${sls:stage}
-    handler: src/handlers/getInvoice.handler
+  getInvoices:
+    # name: invoice-handler-${sls:stage}
+    handler: src/handlers/getInvoices.handler
     events:
       - http: GET /invoices
+    environment:
+      DDB_TABLE_NAME: ${param:tableName}
+
+  getInvoice:
+    handler: src/handlers/getInvoice.handler
+    events:
+      - http: GET /invoice/{invoiceId}
+    environment:
+      DDB_TABLE_NAME: ${param:tableName}
+
+  createInvoice:
+    handler: src/handlers/createInvoice.handler
+    events:
+      - http:
+          method: post
+          path: invoice
+          request:
+            schemas:
+              application/json: ${file(api_gateway_schema/createInvoice.json)}
+
+    environment:
+      DDB_TABLE_NAME: ${param:tableName}
+
+  updatePaymentStatus:
+    handler: src/handlers/updatePaymentStatus.handler
+    events:
+      - http:
+          method: post
+          path: invoice/{invoiceId}/payment-status
+          request:
+            schemas:
+              application/json: ${file(api_gateway_schema/updatePaymentStatus.json)}
     environment:
       DDB_TABLE_NAME: ${param:tableName}
 resources:
@@ -76,6 +108,14 @@ resources:
               - AttributeName: entityType
                 KeyType: HASH
               - AttributeName: paymentStatus
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: entityTypeSKIndex
+            KeySchema:
+              - AttributeName: entityType
+                KeyType: HASH
+              - AttributeName: SK
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL

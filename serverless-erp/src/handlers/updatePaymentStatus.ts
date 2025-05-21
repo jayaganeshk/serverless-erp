@@ -1,0 +1,20 @@
+import { APIGatewayProxyHandler } from "aws-lambda";
+
+import { updatePaymentStatus } from "../service/invoice";
+
+export const handler: APIGatewayProxyHandler = async (event) => {
+  const { body } = event;
+  //   validate the request body
+  if (!body) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: "body is required" }),
+    };
+  }
+  const { invoiceId, paymentStatus } = JSON.parse(body);
+  await updatePaymentStatus(invoiceId, paymentStatus);
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ invoiceId }),
+  };
+};

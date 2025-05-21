@@ -1,0 +1,68 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Invoice",
+    "type": "object",
+    "required": [
+        "customerId",
+        "date",
+        "dueDate",
+        "amount",
+        "paymentStatus",
+        "items"
+    ],
+    "properties": {
+        "customerId": {
+            "type": "string",
+            "description": "Identifier for the customer associated with this invoice"
+        },
+        "date": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date the invoice was created (ISO string format)"
+        },
+        "dueDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The date by which payment is due"
+        },
+        "amount": {
+            "type": "number",
+            "description": "The total amount of the invoice"
+        },
+        "paymentStatus": {
+            "type": "string",
+            "enum": [
+                "PAID",
+                "UNPAID",
+                "OVERDUE"
+            ],
+            "description": "The current payment status of the invoice"
+        },
+        "items": {
+            "type": "array",
+            "description": "Line items included in the invoice",
+            "items": {
+                "type": "object",
+                "required": [
+                    "description",
+                    "quantity",
+                    "unitPrice"
+                ],
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "Description of the item"
+                    },
+                    "quantity": {
+                        "type": "number",
+                        "description": "Quantity of the item"
+                    },
+                    "unitPrice": {
+                        "type": "number",
+                        "description": "Price per unit of the item"
+                    }
+                }
+            }
+        }
+    }
+}

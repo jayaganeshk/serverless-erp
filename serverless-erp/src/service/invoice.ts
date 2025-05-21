@@ -1,6 +1,15 @@
 import { documentClient } from "../utils/ddbClient";
-import { Invoice, InvoiceDDB, fromDDB } from "../model/invoice";
+import {
+  Invoice,
+  InvoiceDDB,
+  fromDDB,
+  toDDB,
+  InvoiceInput,
+  isPaymentStatus,
+} from "../model/invoice";
 import { QueryCommandInput } from "@aws-sdk/lib-dynamodb";
+
+import { newInvoiceNumber } from "./invoiceNumber";
 
 const TableName = process.env.DDB_TABLE_NAME!;
 
@@ -25,7 +34,7 @@ export async function getInvoices(
     );
   }
 
-  // Case 1: Query by customerId using GSI
+  // Case 1: Query by customerId using entityTypeCustomerIdIndex
   if (customerId) {
     params.IndexName = "entityTypeCustomerIdIndex";
     params.KeyConditionExpression =
@@ -53,7 +62,7 @@ export async function getInvoices(
     }
   }
 
-  // Case 2: Query by paymentStatus only using GSI
+  // Case 2: Query by paymentStatus only using entityTypePaymentStatusIndex
   else if (paymentStatus) {
     params.IndexName = "entityTypePaymentStatusIndex";
     params.KeyConditionExpression =
@@ -61,9 +70,10 @@ export async function getInvoices(
     params.ExpressionAttributeValues![":paymentStatus"] = paymentStatus;
   }
 
-  // Case 3: Fetch all invoices (assumes you have a GSI like entityType-SK-index)
+  // Case 3: Fetch all invoices using entityTypeSkIndex
   else {
-    params.KeyConditionExpression = "PK = :entityType";
+    params.IndexName = "entityTypeSkIndex";
+    params.KeyConditionExpression = "entityType = :entityType";
 
     if (date) {
       params.FilterExpression = "#date = :date";
@@ -81,4 +91,69 @@ export async function getInvoices(
       ? Buffer.from(JSON.stringify(result.LastEvaluatedKey)).toString("base64")
       : undefined,
   };
+}
+
+export async function getInvoice(invoiceId: string): Promise<Invoice | null> {
+  const params = {
+    TableName,
+    KeyConditionExpression: "invoiceId = :invoiceId",
+    ExpressionAttributeValues: {
+      ":invoiceId": invoiceId,
+    },
+  };
+
+  const result = await documentClient.query(params);
+  if (result.Items && result.Items.length > 0) {
+    return fromDDB(result.Items[0] as InvoiceDDB);
+  }
+  return null;
+}
+
+export async function createInvoice(
+  invoiceInput: InvoiceInput
+): Promise<String> {
+  const invoiceNumber = await newInvoiceNumber();
+
+  const invoice = toDDB({
+    ...invoiceInput,
+    invoiceId: invoiceNumber,
+  });
+  const params = {
+    TableName,
+    Item: invoice,
+  };
+
+  await documentClient.put(params);
+
+  return invoiceNumber;
+}
+
+export async function updatePaymentStatus(
+  invoiceId: string,
+  paymentStatus: string
+): Promise<void> {
+  // validate if paymentStatus is of isPaymentStatus
+  if (!isPaymentStatus(paymentStatus)) {
+    throw new Error("Invalid payment status");
+  }
+
+  // query and get invoice date
+  const invoice = await getInvoice(invoiceId);
+  if (!invoice) {
+    throw new Error("Invoice not found");
+  }
+
+  const params = {
+    TableName,
+    Key: {
+      PK: invoiceId,
+      SK: invoice.date,
+    },
+    UpdateExpression: "SET paymentStatus = :paymentStatus",
+    ExpressionAttributeValues: {
+      ":paymentStatus": paymentStatus,
+    },
+  };
+
+  await documentClient.update(params);
 }

@@ -1,31 +1,16 @@
 import { APIGatewayProxyHandler } from "aws-lambda";
 
-import {
-  Invoice,
-  InvoiceDDB,
-  validateInvoice,
-  fromDDB,
-  toDDB,
-} from "../model/invoice";
-
-import { getInvoices } from "../service/invoice";
-
-import { documentClient } from "../utils/ddbClient";
-
-const TableName = process.env.DDB_NAME!;
+import { getInvoice } from "../service/invoice";
 
 export const handler: APIGatewayProxyHandler = async (event) => {
-  const { customerId, paymentStatus, date, limit, nextToken } =
-    event.queryStringParameters || {};
-
-  const result = await getInvoices(
-    customerId,
-    paymentStatus,
-    date,
-    Number(limit || 10),
-    nextToken
-  );
-
+  const { invoiceId } = event.pathParameters || {};
+  if (!invoiceId) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: "invoiceId is required" }),
+    };
+  }
+  const result = await getInvoice(invoiceId);
   return {
     statusCode: 200,
     body: JSON.stringify(result),

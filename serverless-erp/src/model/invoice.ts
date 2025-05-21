@@ -1,10 +1,16 @@
+export type PaymentStatus = "PAID" | "UNPAID" | "OVERDUE";
+
+export const isPaymentStatus = (status: string): status is PaymentStatus => {
+  return ["PAID", "UNPAID", "OVERDUE"].includes(status);
+};
+
 export type Invoice = {
   invoiceId: string;
   customerId: string;
   date: string; // ISO string
   dueDate: string;
   amount: number;
-  paymentStatus: "PAID" | "UNPAID" | "OVERDUE";
+  paymentStatus: PaymentStatus;
   items: {
     description: string;
     quantity: number;
@@ -12,8 +18,10 @@ export type Invoice = {
   }[];
 };
 
+export type InvoiceInput = Omit<Invoice, "invoiceId">;
+
 export type InvoiceDDB = {
-  PK: "INVOICE";
+  PK: string; // <invoiceId>
   SK: string; // <invoiceDate>
   entityType: "INVOICE";
   invoiceId: string;
@@ -29,10 +37,9 @@ export type InvoiceDDB = {
   }[];
 };
 
-export function validateInvoice(invoice: Invoice): string[] {
+export function validateInvoiceInput(invoice: InvoiceInput): string[] {
   const errors: string[] = [];
 
-  if (!invoice.invoiceId) errors.push("invoiceId is required");
   if (!invoice.customerId) errors.push("customerId is required");
   if (!invoice.date) errors.push("date is required");
   if (!invoice.dueDate) errors.push("dueDate is required");
@@ -59,7 +66,7 @@ export function validateInvoice(invoice: Invoice): string[] {
 
 export function toDDB(invoice: Invoice): InvoiceDDB {
   return {
-    PK: "INVOICE",
+    PK: invoice.invoiceId,
     SK: invoice.date,
     entityType: "INVOICE",
     invoiceId: invoice.invoiceId,
@@ -79,7 +86,7 @@ export function fromDDB(item: InvoiceDDB): Invoice {
     date: item.date,
     dueDate: item.dueDate,
     amount: item.amount,
-    paymentStatus: item.paymentStatus as "PAID" | "UNPAID" | "OVERDUE",
+    paymentStatus: item.paymentStatus as PaymentStatus,
     items: item.items,
   };
 }
