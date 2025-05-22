@@ -48,6 +48,6 @@ jobs:
         shell: bash
         run: |
           cd ./serverless-erp
-          serverless deploy --stage ${{ inputs.deployment_environment }} --region ${{inputs.region }}
+          serverless deploy --stage ${{ inputs.deployment_environment || 'dev' }} --region ${{ inputs.region || 'us-east-1' }}
         env:
           SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
