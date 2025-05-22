@@ -70,9 +70,9 @@ export async function getInvoices(
     params.ExpressionAttributeValues![":paymentStatus"] = paymentStatus;
   }
 
-  // Case 3: Fetch all invoices using entityTypeSkIndex
+  // Case 3: Fetch all invoices using entityTypeSKIndex
   else {
-    params.IndexName = "entityTypeSkIndex";
+    params.IndexName = "entityTypeSKIndex";
     params.KeyConditionExpression = "entityType = :entityType";
 
     if (date) {
@@ -96,7 +96,7 @@ export async function getInvoices(
 export async function getInvoice(invoiceId: string): Promise<Invoice | null> {
   const params = {
     TableName,
-    KeyConditionExpression: "invoiceId = :invoiceId",
+    KeyConditionExpression: "PK = :invoiceId",
     ExpressionAttributeValues: {
       ":invoiceId": invoiceId,
     },
@@ -142,6 +142,8 @@ export async function updatePaymentStatus(
   if (!invoice) {
     throw new Error("Invoice not found");
   }
+
+  console.log("invoice", invoice);
 
   const params = {
     TableName,

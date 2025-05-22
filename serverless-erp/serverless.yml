@@ -29,6 +29,10 @@ provider:
             - dynamodb:DeleteItem
           Resource:
             - Fn::GetAtt: [ErpTable, Arn]
+            - Fn::Join:
+                - ""
+                - - Fn::GetAtt: [ErpTable, Arn]
+                  - "/index/*"
   environment:
     DDB_TABLE_NAME: ${param:tableName}
 
