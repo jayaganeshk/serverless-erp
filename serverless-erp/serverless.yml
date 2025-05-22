@@ -35,7 +35,17 @@ functions:
     # name: invoice-handler-${sls:stage}
     handler: src/handlers/getInvoices.handler
     events:
-      - http: GET /invoices
+      - http:
+          method: get
+          path: invoices
+          request:
+            parameters:
+              querystrings:
+                customerId: false
+                paymentStatus: false
+                date: false
+                nextToken: false
+                limit: false
     environment:
       DDB_TABLE_NAME: ${param:tableName}
 
