@@ -1,0 +1,43 @@
+name: Deploy servereless erp
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_environment:
+        description: Environment to deploy
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+      region:
+        description: AWS region to deploy
+        type: choice
+        options:
+          - us-east-1
+          - us-west-2
+          - eu-west-1
+          - ap-south-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        shell: bash
+        run: |
+          cd ./serverless-erp
+          npm ci
+
+      - name: deploy serverless
+        uses: serverless/github-action@v3.2
+        with:
+          args: -c "cd ./serverless-erp && serverless deploy --stage ${{ inputs.deployment_environment }} --region  ${{ inputs.region }} "
+          entrypoint: /bin/sh
+        env:
+          SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
