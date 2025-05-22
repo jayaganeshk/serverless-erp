@@ -115,7 +115,7 @@ functions:
     handler: src/handlers/updatePaymentStatus.handler
     events:
       - http:
-          method: post
+          method: put
           path: invoice/{invoiceId}/payment-status
           bodyType: UpdatePaymentStatusRequest
           responseData:

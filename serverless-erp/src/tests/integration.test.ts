@@ -5,7 +5,9 @@ describe("ERP API Integration Tests", () => {
   let createdInvoiceId;
 
   beforeAll(() => {
-    apiUrl = process.env.ServiceEndpoint;
+    apiUrl =
+      process.env.ServiceEndpoint ||
+      "https://u88ktoyhqf.execute-api.us-east-1.amazonaws.com/dev";
 
     if (!apiUrl) {
       throw new Error("ServiceEndpoint environment variable is not set");
@@ -124,7 +126,7 @@ describe("ERP API Integration Tests", () => {
         paymentStatus: "PAID",
       };
 
-      const response = await axios.post(
+      const response = await axios.put(
         `${apiUrl}/invoice/${createdInvoiceId}/payment-status`,
         updateData
       );
@@ -160,7 +162,7 @@ describe("ERP API Integration Tests", () => {
       expect(createdInvoiceId).toBeDefined();
 
       try {
-        await axios.post(
+        await axios.put(
           `${apiUrl}/invoice/${createdInvoiceId}/payment-status`,
           {
             paymentStatus: "INVALID_STATUS",
