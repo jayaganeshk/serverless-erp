@@ -1,12 +1,7 @@
 import { documentClient } from "../utils/ddbClient";
-import {
-  Invoice,
-  InvoiceDDB,
-  fromDDB,
-  toDDB,
-  InvoiceInput,
-  isPaymentStatus,
-} from "../model/invoice";
+import { Invoice, InvoiceInput, isPaymentStatus } from "../model/invoice";
+import { InvoiceDDB, fromDDB, toDDB } from "../model/invoiceDDB";
+
 import { QueryCommandInput } from "@aws-sdk/lib-dynamodb";
 
 import { newInvoiceNumber } from "./invoiceNumber";

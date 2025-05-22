@@ -18,23 +18,21 @@ export type Invoice = {
   }[];
 };
 
-export type InvoiceInput = Omit<Invoice, "invoiceId">;
-
-export type InvoiceDDB = {
-  PK: string; // <invoiceId>
-  SK: string; // <invoiceDate>
-  entityType: "INVOICE";
-  invoiceId: string;
+export type InvoiceInput = {
   customerId: string;
-  date: string;
+  date: string; // ISO string
   dueDate: string;
   amount: number;
-  paymentStatus: string;
+  paymentStatus: PaymentStatus;
   items: {
     description: string;
     quantity: number;
     unitPrice: number;
   }[];
+};
+
+export type PaymentStatusInput = {
+  paymentStatus: PaymentStatus;
 };
 
 export function validateInvoiceInput(invoice: InvoiceInput): string[] {
@@ -62,31 +60,4 @@ export function validateInvoiceInput(invoice: InvoiceInput): string[] {
   }
 
   return errors;
-}
-
-export function toDDB(invoice: Invoice): InvoiceDDB {
-  return {
-    PK: invoice.invoiceId,
-    SK: invoice.date,
-    entityType: "INVOICE",
-    invoiceId: invoice.invoiceId,
-    customerId: invoice.customerId,
-    date: invoice.date,
-    dueDate: invoice.dueDate,
-    amount: invoice.amount,
-    paymentStatus: invoice.paymentStatus,
-    items: invoice.items,
-  };
-}
-
-export function fromDDB(item: InvoiceDDB): Invoice {
-  return {
-    invoiceId: item.invoiceId,
-    customerId: item.customerId,
-    date: item.date,
-    dueDate: item.dueDate,
-    amount: item.amount,
-    paymentStatus: item.paymentStatus as PaymentStatus,
-    items: item.items,
-  };
 }

@@ -7,6 +7,17 @@ stages:
     params:
       tableName: "erp-table-${sls:stage}"
 
+package:
+  patterns:
+    - swagger/*
+
+plugins:
+  - serverless-auto-swagger
+
+custom:
+  autoswagger:
+    typefiles: ["./src/model/apiResponse.ts", "./src/model/invoice.ts"]
+
 provider:
   name: aws
   runtime: nodejs20.x
@@ -46,15 +57,37 @@ functions:
                 date: false
                 nextToken: false
                 limit: false
+          responseData:
+            {
+              200:
+                {
+                  description: "Invoice Data",
+                  bodyType: "GetInvoicesResponse",
+                },
+              500: "Internal server error",
+            }
     environment:
       DDB_TABLE_NAME: ${param:tableName}
 
   getInvoice:
     handler: src/handlers/getInvoice.handler
     events:
-      - http: GET /invoice/{invoiceId}
+      - http:
+          method: get
+          path: invoice/{invoiceId}
+          request:
+            parameters:
+              paths:
+                invoiceId: true
+          responseData:
+            {
+              200:
+                { description: "Invoice Data", bodyType: "GetInvoiceResponse" },
+              500: "Internal server error",
+            }
     environment:
       DDB_TABLE_NAME: ${param:tableName}
+    responseType: Invoice[]
 
   createInvoice:
     handler: src/handlers/createInvoice.handler
@@ -62,6 +95,16 @@ functions:
       - http:
           method: post
           path: invoice
+          bodyType: CreateInvoiceRequest
+          responseData:
+            {
+              200:
+                {
+                  description: "Invoice Created",
+                  bodyType: "CreateInvoiceResponse",
+                },
+              500: "Internal server error",
+            }
           request:
             schemas:
               application/json: ${file(api_gateway_schema/createInvoice.json)}
@@ -75,6 +118,16 @@ functions:
       - http:
           method: post
           path: invoice/{invoiceId}/payment-status
+          bodyType: UpdatePaymentStatusRequest
+          responseData:
+            {
+              200:
+                {
+                  description: "Payment Status Updated",
+                  bodyType: "UpdatePaymentStatusResponse",
+                },
+              500: "Internal server error",
+            }
           request:
             schemas:
               application/json: ${file(api_gateway_schema/updatePaymentStatus.json)}
