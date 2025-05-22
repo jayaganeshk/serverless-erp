@@ -7,12 +7,6 @@ stages:
     params:
       tableName: "erp-table-${sls:stage}"
 
-plugins:
-  - serverless-plugin-typescript
-
-build:
-  esbuild: false
-
 provider:
   name: aws
   runtime: nodejs20.x
