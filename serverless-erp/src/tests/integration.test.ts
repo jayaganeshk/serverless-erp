@@ -5,9 +5,7 @@ describe("ERP API Integration Tests", () => {
   let createdInvoiceId;
 
   beforeAll(() => {
-    apiUrl =
-      process.env.ServiceEndpoint ||
-      "https://u88ktoyhqf.execute-api.us-east-1.amazonaws.com/dev";
+    apiUrl = process.env.ServiceEndpoint;
 
     if (!apiUrl) {
       throw new Error("ServiceEndpoint environment variable is not set");
