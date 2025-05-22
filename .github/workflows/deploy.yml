@@ -60,7 +60,9 @@ jobs:
         shell: bash
         run: |
           cd ./serverless-erp
-          endpoint=serverless info --json --stage dev --region us-east-1 | jq -r '.outputs[] | select(.OutputKey == "ServiceEndpoint") | .OutputValue'
+          serverless info --json --stage ${{ inputs.deployment_environment || 'dev' }} --region ${{ inputs.region || 'us-east-1' }}
+
+          endpoint=serverless info --json --stage ${{ inputs.deployment_environment || 'dev' }} --region ${{ inputs.region || 'us-east-1' }} | jq -r '.outputs[] | select(.OutputKey == "ServiceEndpoint") | .OutputValue'
           echo "ServiceEndpoint=$endpoint"
           echo "ServiceEndpoint=$endpoint" >> $GITHUB_OUTPUT
         env:
