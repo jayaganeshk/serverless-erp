@@ -33,12 +33,13 @@ export async function getInvoices(
   if (customerId) {
     params.IndexName = "entityTypeCustomerIdIndex";
     params.KeyConditionExpression =
-      "entityType = :entityType AND customerId = :customerId";
+      "entityType = :entityType AND #customerId = :customerId";
     params.ExpressionAttributeValues![":customerId"] = customerId;
-
+    params.ExpressionAttributeNames = {
+      "#customerId": "customerId",
+    };
     // Optional filter
     const filters: string[] = [];
-    params.ExpressionAttributeNames = {};
 
     if (paymentStatus) {
       filters.push("#paymentStatus = :paymentStatus");
@@ -71,12 +72,18 @@ export async function getInvoices(
     params.KeyConditionExpression = "entityType = :entityType";
 
     if (date) {
-      params.FilterExpression = "#date = :date";
+      // params.FilterExpression = "#date = :date";
+      // params.ExpressionAttributeNames = { "#date": "SK" };
+      // params.ExpressionAttributeValues![":date"] = date;
+
+      params.KeyConditionExpression =
+        "entityType = :entityType AND #date = :date";
       params.ExpressionAttributeNames = { "#date": "SK" };
       params.ExpressionAttributeValues![":date"] = date;
     }
   }
 
+  console.log("params", params);
   const result = await documentClient.query(params);
   const invoices = result.Items as InvoiceDDB[];
 
