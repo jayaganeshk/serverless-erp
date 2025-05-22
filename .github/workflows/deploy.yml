@@ -28,8 +28,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    outputs:
+      ServiceEndpoint: ${{ steps.serverless-outputs.outputs.ServiceEndpoint }}
     steps:
       - uses: actions/checkout@v3
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -51,3 +54,39 @@ jobs:
           serverless deploy --stage ${{ inputs.deployment_environment || 'dev' }} --region ${{ inputs.region || 'us-east-1' }}
         env:
           SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+
+      - name: get serverless outputs
+        id: serverless-outputs
+        shell: bash
+        run: |
+          cd ./serverless-erp
+          endpoint=serverless info --json --stage dev --region us-east-1 | jq -r '.outputs[] | select(.OutputKey == "ServiceEndpoint") | .OutputValue'
+          echo "ServiceEndpoint=$endpoint"
+          echo "ServiceEndpoint=$endpoint" >> $GITHUB_OUTPUT
+        env:
+          SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
+
+  integration-tests:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install test dependencies
+        shell: bash
+        run: |
+          cd ./serverless-erp
+          npm ci
+
+      - name: run integration tests
+        shell: bash
+        run: |
+          cd ./serverless-erp
+          npm run test:integration
+        env:
+          ServiceEndpoint: ${{ needs.deploy.outputs.ServiceEndpoint }}
