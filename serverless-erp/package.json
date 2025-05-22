@@ -12,6 +12,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.149",
     "@types/node": "^22.15.21",
+    "serverless-auto-swagger": "^3.1.0",
     "serverless-plugin-typescript": "^2.1.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
