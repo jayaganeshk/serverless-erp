@@ -1,6 +1,10 @@
 name: Deploy serverless erp
 
 on:
+  push:
+    branches:
+      - main
+
   workflow_dispatch:
     inputs:
       deployment_environment:
