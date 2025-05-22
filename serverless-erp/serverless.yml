@@ -64,7 +64,11 @@ functions:
                   description: "Invoice Data",
                   bodyType: "GetInvoicesResponse",
                 },
-              500: "Internal server error",
+              500:
+                {
+                  description: "Internal server error",
+                  bodyType: "ErrorResponse",
+                },
             }
     environment:
       DDB_TABLE_NAME: ${param:tableName}
@@ -83,7 +87,11 @@ functions:
             {
               200:
                 { description: "Invoice Data", bodyType: "GetInvoiceResponse" },
-              500: "Internal server error",
+              500:
+                {
+                  description: "Internal server error",
+                  bodyType: "ErrorResponse",
+                },
             }
     environment:
       DDB_TABLE_NAME: ${param:tableName}
@@ -102,7 +110,11 @@ functions:
                   description: "Invoice Created",
                   bodyType: "CreateInvoiceResponse",
                 },
-              500: "Internal server error",
+              500:
+                {
+                  description: "Internal server error",
+                  bodyType: "ErrorResponse",
+                },
             }
           request:
             schemas:
@@ -125,7 +137,13 @@ functions:
                   description: "Payment Status Updated",
                   bodyType: "UpdatePaymentStatusResponse",
                 },
-              500: "Internal server error",
+              404:
+                { description: "Invoice not found", bodyType: "ErrorResponse" },
+              500:
+                {
+                  description: "Internal server error",
+                  bodyType: "ErrorResponse",
+                },
             }
           request:
             schemas:

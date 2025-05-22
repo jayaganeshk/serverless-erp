@@ -20,3 +20,8 @@ export type UpdatePaymentStatusRequest = {
 export type UpdatePaymentStatusResponse = {
   invoiceId: string;
 };
+
+export type ErrorResponse = {
+  statusCode: number;
+  message: string;
+};

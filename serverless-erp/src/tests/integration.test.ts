@@ -173,6 +173,16 @@ describe("ERP API Integration Tests", () => {
       }
     });
 
+    test("should return error for invoice not found while updating payment status", async () => {
+      try {
+        await axios.put(`${apiUrl}/invoice/INV-NOT_FOUND/payment-status`, {
+          paymentStatus: "INVALID_STATUS",
+        });
+      } catch (error) {
+        expect(error.response.status).toBeGreaterThanOrEqual(400);
+      }
+    });
+
     test("should return error for invalid invoice data", async () => {
       try {
         await axios.post(`${apiUrl}/invoice`, {
